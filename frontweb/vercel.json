@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd frontweb && yarn && yarn build",
-  "outputDirectory": "frontweb/dist",
+  "buildCommand": "yarn && yarn build",
+  "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
     {
