@@ -12,13 +12,13 @@ app.use(cors());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: process.env.CLIENT_URL || 'https://translator-wine.vercel.app',
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 10000;
 const TRANSLATION_ENDPOINT = process.env.AZURE_TRANSLATION_ENDPOINT;
 const SUBSCRIPTION_KEY = process.env.AZURE_TRANSLATOR_KEY;
 const REGION = process.env.AZURE_TRANSLATOR_REGION;

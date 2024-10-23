@@ -9,7 +9,10 @@ import SupervisorChat from './components/SupervisorChat';
 const SOCKET_SERVER_URL =
   import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:5177';
 
-const socket = io(SOCKET_SERVER_URL);
+const socket = io(SOCKET_SERVER_URL, {
+  transports: ['websocket'],
+  withCredentials: true,
+});
 
 function App() {
   const [room, setRoom] = useState('');
@@ -38,6 +41,21 @@ function App() {
     return () => {
       socket.off('message');
       socket.off('messageHistory');
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('connect_error');
     };
   }, []);
 
