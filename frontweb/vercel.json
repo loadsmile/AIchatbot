@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd frontweb && yarn && yarn build",
+  "outputDirectory": "frontweb/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
