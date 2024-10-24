@@ -17,7 +17,6 @@ function AgentChat({
   const getMessageStyle = (msg) => {
     const baseStyle =
       'mb-3 p-3 rounded-lg shadow-md max-w-[85%] break-words text-white ';
-
     if (msg.type === 'private') {
       return baseStyle + 'bg-gray-600 ml-auto';
     } else if (msg.type === 'system') {
@@ -31,7 +30,7 @@ function AgentChat({
   };
 
   return (
-    <div className="flex-grow flex relative">
+    <div className="flex-grow flex relative h-[calc(100vh-64px)]">
       {/* Background image with opacity */}
       <div
         className="absolute inset-0 bg-cover bg-center z-0 opacity-30"
@@ -39,55 +38,61 @@ function AgentChat({
       ></div>
 
       {/* Content */}
-      <div className="flex-grow flex z-10 relative p-4">
-        {/* Left Sidebar */}
-        <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg mr-4 overflow-y-auto">
+      <div className="flex-grow flex z-10 relative p-4 gap-4">
+        {/* Left Sidebar - Fixed height with independent scroll */}
+        <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
           <h2 className="text-xl font-semibold mb-4">My conversations</h2>
-          <div className="space-y-2">
-            {[
-              'Ashley Allen',
-              'Marco Carelli',
-              'Ginevera Romano',
-              'Gina LoCascio',
-              'Tony Rossi',
-              'Christina Ricci',
-              'May Line',
-            ].map((name, index) => (
-              <div
-                key={index}
-                className="bg-[#1a1a4a] p-3 rounded-lg flex items-center"
-              >
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-2">
+              {[
+                'Ashley Allen',
+                'Marco Carelli',
+                'Ginevera Romano',
+                'Gina LoCascio',
+                'Tony Rossi',
+                'Christina Ricci',
+                'May Line',
+              ].map((name, index) => (
                 <div
-                  className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center text-white ${
-                    [
-                      'bg-purple-500',
-                      'bg-blue-500',
-                      'bg-orange-500',
-                      'bg-pink-500',
-                      'bg-green-500',
-                      'bg-indigo-500',
-                      'bg-yellow-500',
-                    ][index]
-                  }`}
+                  key={index}
+                  className="bg-[#1a1a4a] p-3 rounded-lg flex items-center"
                 >
-                  {name.charAt(0)}
+                  <div
+                    className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center text-white ${
+                      [
+                        'bg-purple-500',
+                        'bg-blue-500',
+                        'bg-orange-500',
+                        'bg-pink-500',
+                        'bg-green-500',
+                        'bg-indigo-500',
+                        'bg-yellow-500',
+                      ][index]
+                    }`}
+                  >
+                    {name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-medium">{name}</p>
+                    <p className="text-sm text-gray-400">
+                      Last text in the chat
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">{name}</p>
-                  <p className="text-sm text-gray-400">Last text in the chat</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Main Chat Area */}
-        <div className="flex-grow bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col">
+        {/* Main Chat Area - Fixed height with independent scroll */}
+        <div className="flex-grow bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
           <h2 className="text-xl font-semibold mb-3 px-2 flex items-center">
             <FaHeadset className="text-lg mr-1" />
             <span>{username}</span>
           </h2>
-          <div className="flex-grow overflow-y-auto mb-4 px-2">
+
+          {/* Messages area with scroll */}
+          <div className="flex-1 overflow-y-auto mb-4 px-2">
             {messages.map((msg, index) => (
               <div key={index} className={getMessageStyle(msg)}>
                 <div className="flex justify-between items-start mb-1">
@@ -121,6 +126,8 @@ function AgentChat({
             ))}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Input area - Fixed at bottom */}
           <div className="px-2">
             <form onSubmit={sendMessage} className="flex gap-2 mb-2">
               <input
@@ -153,24 +160,26 @@ function AgentChat({
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg ml-4 overflow-y-auto">
+        {/* Right Sidebar - Fixed height with independent scroll */}
+        <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
           <h2 className="text-xl font-semibold mb-4">Knowledge Base</h2>
-          <div className="space-y-2">
-            {[
-              'Article 1',
-              'Article 2',
-              'Article 3',
-              'Article 4',
-              'Article 5',
-            ].map((article, index) => (
-              <div key={index} className="bg-[#1a1a4a] p-3 rounded-lg">
-                <h3 className="font-medium">{article}</h3>
-                <p className="text-sm text-gray-400">
-                  Brief description of the article...
-                </p>
-              </div>
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-2">
+              {[
+                'Article 1',
+                'Article 2',
+                'Article 3',
+                'Article 4',
+                'Article 5',
+              ].map((article, index) => (
+                <div key={index} className="bg-[#1a1a4a] p-3 rounded-lg">
+                  <h3 className="font-medium">{article}</h3>
+                  <p className="text-sm text-gray-400">
+                    Brief description of the article...
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

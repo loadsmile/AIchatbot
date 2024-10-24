@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { AiOutlineUser } from 'react-icons/ai';
 import aiBackground from '/AI-background.jpg';
 
