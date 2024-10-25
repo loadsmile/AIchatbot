@@ -77,7 +77,6 @@ function App() {
 
   return (
     <div className="bg-[#09092d] min-h-screen text-white flex flex-col">
-      <Header />
       {!joined ? (
         <LoginForm
           room={room}
@@ -91,18 +90,21 @@ function App() {
           joinRoom={joinRoom}
         />
       ) : (
-        <Chat
-          messages={messages}
-          username={username}
-          sendMessage={sendMessage}
-          message={message}
-          setMessage={setMessage}
-          formatTimestamp={formatTimestamp}
-          messagesEndRef={messagesEndRef}
-          isPrivate={isPrivate}
-          setIsPrivate={setIsPrivate}
-          role={role}
-        />
+        <>
+          <Header />
+          <Chat
+            messages={messages}
+            username={username}
+            sendMessage={sendMessage}
+            message={message}
+            setMessage={setMessage}
+            formatTimestamp={formatTimestamp}
+            messagesEndRef={messagesEndRef}
+            isPrivate={isPrivate}
+            setIsPrivate={setIsPrivate}
+            role={role}
+          />
+        </>
       )}
     </div>
   );
