@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import Header from './components/Header';
 import LoginForm from './components/LoginForm';
-import UserChat from './components/UserChat';
-import AgentChat from './components/AgentChat';
-import SupervisorChat from './components/SupervisorChat';
+import Chat from './components/Chat';
 
 const SOCKET_SERVER_URL =
-  import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:5177';
+  import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3000';
 
 const socket = io(SOCKET_SERVER_URL, {
   transports: ['websocket'],
@@ -18,7 +16,7 @@ function App() {
   const [room, setRoom] = useState('');
   const [username, setUsername] = useState('');
   const [language, setLanguage] = useState('en');
-  const [role, setRole] = useState('agent');
+  const [role, setRole] = useState('');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
   const [joined, setJoined] = useState(false);
@@ -41,21 +39,6 @@ function App() {
     return () => {
       socket.off('message');
       socket.off('messageHistory');
-    };
-  }, []);
-
-  useEffect(() => {
-    socket.on('connect', () => {
-      console.log('Connected to server');
-    });
-
-    socket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-    });
-
-    return () => {
-      socket.off('connect');
-      socket.off('connect_error');
     };
   }, []);
 
@@ -108,45 +91,18 @@ function App() {
           joinRoom={joinRoom}
         />
       ) : (
-        <>
-          {role === 'user' && (
-            <UserChat
-              messages={messages}
-              username={username}
-              sendMessage={sendMessage}
-              message={message}
-              setMessage={setMessage}
-              formatTimestamp={formatTimestamp}
-              messagesEndRef={messagesEndRef}
-            />
-          )}
-          {role === 'agent' && (
-            <AgentChat
-              messages={messages}
-              username={username}
-              sendMessage={sendMessage}
-              message={message}
-              setMessage={setMessage}
-              formatTimestamp={formatTimestamp}
-              messagesEndRef={messagesEndRef}
-              isPrivate={isPrivate}
-              setIsPrivate={setIsPrivate}
-            />
-          )}
-          {role === 'supervisor' && (
-            <SupervisorChat
-              messages={messages}
-              username={username}
-              sendMessage={sendMessage}
-              message={message}
-              setMessage={setMessage}
-              formatTimestamp={formatTimestamp}
-              messagesEndRef={messagesEndRef}
-              isPrivate={isPrivate}
-              setIsPrivate={setIsPrivate}
-            />
-          )}
-        </>
+        <Chat
+          messages={messages}
+          username={username}
+          sendMessage={sendMessage}
+          message={message}
+          setMessage={setMessage}
+          formatTimestamp={formatTimestamp}
+          messagesEndRef={messagesEndRef}
+          isPrivate={isPrivate}
+          setIsPrivate={setIsPrivate}
+          role={role}
+        />
       )}
     </div>
   );
