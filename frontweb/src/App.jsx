@@ -5,10 +5,10 @@ import LoginForm from './components/LoginForm';
 import Chat from './components/Chat';
 
 const SOCKET_SERVER_URL =
-  import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:3000';
+  import.meta.env.VITE_SOCKET_SERVER_URL || 'http://localhost:10000';
 
 const socket = io(SOCKET_SERVER_URL, {
-  transports: ['websocket'],
+  transports: ['websocket', 'polling'],
   withCredentials: true,
 });
 
@@ -103,6 +103,7 @@ function App() {
             isPrivate={isPrivate}
             setIsPrivate={setIsPrivate}
             role={role}
+            language={language}
           />
         </>
       )}

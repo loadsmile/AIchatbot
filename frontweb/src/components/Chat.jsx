@@ -1,12 +1,13 @@
-/* eslint-disable react/prop-types */
+import { useEffect } from 'react';
 import { FaHeadset } from 'react-icons/fa';
 import { BsToggleOn, BsToggleOff } from 'react-icons/bs';
 import { MdSupervisorAccount } from 'react-icons/md';
 import { AiOutlineUser } from 'react-icons/ai';
+import PropTypes from 'prop-types';
 import aiBackground from '/AI-background.jpg';
-import { useEffect } from 'react';
+import AgentChat from './AgentChat';
 
-const Chat = ({
+function Chat({
   messages,
   username,
   sendMessage,
@@ -17,7 +18,8 @@ const Chat = ({
   isPrivate,
   setIsPrivate,
   role,
-}) => {
+  language
+}) {
   useEffect(() => {
     if (role === 'supervisor') {
       setIsPrivate(true);
@@ -37,48 +39,23 @@ const Chat = ({
     }
   };
 
-  const getMessageStyle = (msg) => {
-    const baseStyle =
-      'mb-3 p-3 rounded-lg shadow-md max-w-[85%] break-words text-white ';
-    if (msg.type === 'private') {
-      return baseStyle + 'bg-gray-600 ml-auto';
-    } else if (msg.type === 'system') {
-      return baseStyle + 'bg-gray-500 mx-auto';
-    } else if (msg.username === username) {
-      return baseStyle + 'bg-gray-700 ml-auto';
-    } else if (msg.role === 'user') {
-      return baseStyle + 'bg-gray-400';
-    }
-    return baseStyle + 'bg-[#4b4bf9]';
-  };
-
-  const conversations = [
-    'Ashley Allen',
-    'Marco Carelli',
-    'Ginevera Romano',
-    'Gina LoCascio',
-    'Tony Rossi',
-    'Christina Ricci',
-    'May Line',
-  ];
-
-  const knowledgeBase = [
-    'Article 1',
-    'Article 2',
-    'Article 3',
-    'Article 4',
-    'Article 5',
-  ];
-
-  const avatarColors = [
-    'bg-purple-500',
-    'bg-blue-500',
-    'bg-orange-500',
-    'bg-pink-500',
-    'bg-green-500',
-    'bg-indigo-500',
-    'bg-yellow-500',
-  ];
+  if (role === 'agent') {
+    return (
+      <AgentChat
+        messages={messages}
+        username={username}
+        sendMessage={sendMessage}
+        message={message}
+        setMessage={setMessage}
+        formatTimestamp={formatTimestamp}
+        messagesEndRef={messagesEndRef}
+        isPrivate={isPrivate}
+        setIsPrivate={setIsPrivate}
+        language={language}
+        role={role}
+      />
+    );
+  }
 
   const bgColor = role === 'supervisor' ? '[#0f0f3d]' : 'gray-800';
   const inputBgColor = role === 'supervisor' ? '[#3a3a6a]' : 'gray-700';
@@ -92,37 +69,6 @@ const Chat = ({
       />
 
       <div className="flex-grow flex z-10 relative p-4 gap-4">
-        {/* Left Sidebar - Only visible for agent and supervisor */}
-        {role !== 'user' && (
-          <div
-            className={`w-1/4 bg-${bgColor} bg-opacity-80 p-4 rounded-lg flex flex-col h-full`}
-          >
-            <h2 className="text-xl font-semibold mb-4">My conversations</h2>
-            <div className="flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                {conversations.map((name, index) => (
-                  <div
-                    key={index}
-                    className="bg-[#1a1a4a] p-3 rounded-lg flex items-center"
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center text-white ${avatarColors[index]}`}
-                    >
-                      {name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-medium">{name}</p>
-                      <p className="text-sm text-gray-400">
-                        Last text in the chat
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Main Chat Area - Width adjusts based on role */}
         <div
           className={`${
@@ -136,7 +82,12 @@ const Chat = ({
 
           <div className="flex-1 overflow-y-auto mb-4 px-2">
             {messages.map((msg, index) => (
-              <div key={index} className={getMessageStyle(msg)}>
+              <div key={index} className={`mb-3 p-3 rounded-lg shadow-md max-w-[85%] break-words text-white ${
+                msg.type === 'private' ? 'bg-gray-600 ml-auto' :
+                msg.type === 'system' ? 'bg-gray-500 mx-auto' :
+                msg.username === username ? 'bg-gray-700 ml-auto' :
+                msg.role === 'user' ? 'bg-gray-400' : 'bg-[#4b4bf9]'
+              }`}>
                 <div className="flex justify-between items-start mb-1">
                   <strong className="font-medium text-sm flex items-center">
                     {getRoleIcon(msg.role)}
@@ -200,30 +151,35 @@ const Chat = ({
             )}
           </div>
         </div>
-
-        {/* Right Sidebar - Only visible for agent and supervisor */}
-        {role !== 'user' && (
-          <div
-            className={`w-1/4 bg-${bgColor} bg-opacity-80 p-4 rounded-lg flex flex-col h-full`}
-          >
-            <h2 className="text-xl font-semibold mb-4">Knowledge Base</h2>
-            <div className="flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                {knowledgeBase.map((article, index) => (
-                  <div key={index} className="bg-[#1a1a4a] p-3 rounded-lg">
-                    <h3 className="font-medium">{article}</h3>
-                    <p className="text-sm text-gray-400">
-                      Brief description of the article...
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
+}
+
+Chat.propTypes = {
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      role: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+      timestamp: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+      type: PropTypes.string,
+      isTranslated: PropTypes.bool,
+      originalText: PropTypes.string,
+      senderRole: PropTypes.string,
+      targetRole: PropTypes.string
+    })
+  ).isRequired,
+  username: PropTypes.string.isRequired,
+  sendMessage: PropTypes.func.isRequired,
+  message: PropTypes.string.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  formatTimestamp: PropTypes.func.isRequired,
+  messagesEndRef: PropTypes.object.isRequired,
+  isPrivate: PropTypes.bool.isRequired,
+  setIsPrivate: PropTypes.func.isRequired,
+  role: PropTypes.string.isRequired,
+  language: PropTypes.string.isRequired
 };
 
 export default Chat;

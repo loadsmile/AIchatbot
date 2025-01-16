@@ -1,6 +1,8 @@
-/* eslint-disable react/prop-types */
+import { useState, useEffect, useCallback } from 'react';
 import { FaHeadset } from 'react-icons/fa';
 import { BsToggleOn, BsToggleOff } from 'react-icons/bs';
+import { AiOutlineRobot } from 'react-icons/ai';
+import PropTypes from 'prop-types';
 import aiBackground from '/AI-background.jpg';
 
 function AgentChat({
@@ -13,70 +15,108 @@ function AgentChat({
   messagesEndRef,
   isPrivate,
   setIsPrivate,
+  language,
+  role
 }) {
-  const getMessageStyle = (msg) => {
-    const baseStyle =
-      'mb-3 p-3 rounded-lg shadow-md max-w-[85%] break-words text-white ';
-    if (msg.type === 'private') {
-      return baseStyle + 'bg-gray-600 ml-auto';
-    } else if (msg.type === 'system') {
-      return baseStyle + 'bg-gray-500 mx-auto';
-    } else if (msg.username === username) {
-      return baseStyle + 'bg-gray-700 ml-auto';
-    } else if (msg.role === 'user') {
-      return baseStyle + 'bg-gray-400';
+  const [suggestions, setSuggestions] = useState([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const analyzeMessage = useCallback(async (text) => {
+    if (role !== 'agent') return;
+
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('http://localhost:10000/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Language': language
+        },
+        body: JSON.stringify({ text })
+      });
+      const data = await response.json();
+      setSuggestions(data.suggestions || []);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      setSuggestions([]);
+    } finally {
+      setIsAnalyzing(false);
     }
+  }, [language, role]);
+
+  useEffect(() => {
+    if (messages.length > 0 && role === 'agent') {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        analyzeMessage(lastMessage.text);
+      }
+    }
+  }, [messages, analyzeMessage, role]);
+
+  const getMessageStyle = (msg) => {
+    const baseStyle = 'mb-3 p-3 rounded-lg shadow-md max-w-[85%] break-words text-white ';
+    if (msg.type === 'private') return baseStyle + 'bg-gray-600 ml-auto';
+    if (msg.type === 'system') return baseStyle + 'bg-gray-500 mx-auto';
+    if (msg.username === username) return baseStyle + 'bg-gray-700 ml-auto';
+    if (msg.role === 'user') return baseStyle + 'bg-gray-400';
     return baseStyle + 'bg-[#4b4bf9]';
   };
 
+  const handleSuggestionClick = (suggestion) => {
+    setMessage(suggestion);
+  };
+
+  const knowledgeBase = [
+    {
+      title: 'Product Returns',
+      content: 'Process for handling product returns and refunds',
+      solutions: ['Return policy', 'Refund timelines', 'Shipping labels']
+    },
+    {
+      title: 'Technical Support',
+      content: 'Common technical issues and troubleshooting steps',
+      solutions: ['Basic troubleshooting', 'System requirements', 'Network issues']
+    },
+    {
+      title: 'Billing Issues',
+      content: 'Payment and billing-related problems',
+      solutions: ['Payment methods', 'Invoice queries', 'Subscription issues']
+    },
+    {
+      title: 'Account Management',
+      content: 'Account-related assistance and settings',
+      solutions: ['Password reset', 'Account security', 'Profile updates']
+    },
+    {
+      title: 'Service Status',
+      content: 'Current system status and known issues',
+      solutions: ['Service updates', 'Maintenance schedules', 'Known issues']
+    }
+  ];
+
   return (
     <div className="flex-grow flex relative h-[calc(100vh-64px)]">
-      {/* Background image with opacity */}
-      <div
-        className="absolute inset-0 bg-cover bg-center z-0 opacity-30"
-        style={{ backgroundImage: `url(${aiBackground})` }}
-      ></div>
+      <div className="absolute inset-0 bg-cover bg-center z-0 opacity-30"
+           style={{ backgroundImage: `url(${aiBackground})` }} />
 
-      {/* Content */}
       <div className="flex-grow flex z-10 relative p-4 gap-4">
-        {/* Left Sidebar - Fixed height with independent scroll */}
+        {/* Left Sidebar */}
         <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
           <h2 className="text-xl font-semibold mb-4">My conversations</h2>
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-2">
-              {[
-                'Ashley Allen',
-                'Marco Carelli',
-                'Ginevera Romano',
-                'Gina LoCascio',
-                'Tony Rossi',
-                'Christina Ricci',
-                'May Line',
-              ].map((name, index) => (
-                <div
-                  key={index}
-                  className="bg-[#1a1a4a] p-3 rounded-lg flex items-center"
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center text-white ${
-                      [
-                        'bg-purple-500',
-                        'bg-blue-500',
-                        'bg-orange-500',
-                        'bg-pink-500',
-                        'bg-green-500',
-                        'bg-indigo-500',
-                        'bg-yellow-500',
-                      ][index]
-                    }`}
-                  >
+              {['Ashley Allen', 'Marco Carelli', 'Ginevera Romano', 'Gina LoCascio',
+                'Tony Rossi', 'Christina Ricci', 'May Line'].map((name, index) => (
+                <div key={index} className="bg-[#1a1a4a] p-3 rounded-lg flex items-center">
+                  <div className={`w-8 h-8 rounded-full mr-3 flex items-center justify-center text-white ${[
+                    'bg-purple-500', 'bg-blue-500', 'bg-orange-500', 'bg-pink-500',
+                    'bg-green-500', 'bg-indigo-500', 'bg-yellow-500'
+                  ][index]}`}>
                     {name.charAt(0)}
                   </div>
                   <div>
                     <p className="font-medium">{name}</p>
-                    <p className="text-sm text-gray-400">
-                      Last text in the chat
-                    </p>
+                    <p className="text-sm text-gray-400">Last text in the chat</p>
                   </div>
                 </div>
               ))}
@@ -84,22 +124,19 @@ function AgentChat({
           </div>
         </div>
 
-        {/* Main Chat Area - Fixed height with independent scroll */}
+        {/* Main Chat Area */}
         <div className="flex-grow bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
           <h2 className="text-xl font-semibold mb-3 px-2 flex items-center">
             <FaHeadset className="text-lg mr-1" />
             <span>{username}</span>
           </h2>
 
-          {/* Messages area with scroll */}
           <div className="flex-1 overflow-y-auto mb-4 px-2">
             {messages.map((msg, index) => (
               <div key={index} className={getMessageStyle(msg)}>
                 <div className="flex justify-between items-start mb-1">
                   <strong className="font-medium text-sm flex items-center">
-                    {msg.role === 'user' ? (
-                      <FaHeadset className="text-lg mr-1" />
-                    ) : null}
+                    {msg.role === 'user' && <FaHeadset className="text-lg mr-1" />}
                     <span>{msg.username}</span>
                   </strong>
                   <span className="text-xs text-gray-300">
@@ -127,7 +164,6 @@ function AgentChat({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input area - Fixed at bottom */}
           <div className="px-2">
             <form onSubmit={sendMessage} className="flex gap-2 mb-2">
               <input
@@ -137,19 +173,13 @@ function AgentChat({
                 onChange={(e) => setMessage(e.target.value)}
                 className="flex-grow px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white text-sm"
               />
-              <button
-                type="submit"
-                className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm transition duration-150 ease-in-out"
-              >
+              <button type="submit" className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm transition duration-150 ease-in-out">
                 Send
               </button>
             </form>
             <div className="flex items-center justify-end mt-2">
               <span className="mr-2 text-sm">Private</span>
-              <button
-                onClick={() => setIsPrivate(!isPrivate)}
-                className="focus:outline-none"
-              >
+              <button onClick={() => setIsPrivate(!isPrivate)} className="focus:outline-none">
                 {isPrivate ? (
                   <BsToggleOn className="text-indigo-500 text-2xl" />
                 ) : (
@@ -160,31 +190,86 @@ function AgentChat({
           </div>
         </div>
 
-        {/* Right Sidebar - Fixed height with independent scroll */}
-        <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
-          <h2 className="text-xl font-semibold mb-4">Knowledge Base</h2>
-          <div className="flex-1 overflow-y-auto">
-            <div className="space-y-2">
-              {[
-                'Article 1',
-                'Article 2',
-                'Article 3',
-                'Article 4',
-                'Article 5',
-              ].map((article, index) => (
-                <div key={index} className="bg-[#1a1a4a] p-3 rounded-lg">
-                  <h3 className="font-medium">{article}</h3>
-                  <p className="text-sm text-gray-400">
-                    Brief description of the article...
-                  </p>
-                </div>
-              ))}
+        {/* Digital Assistant Sidebar - Only visible for agents */}
+        {role === 'agent' && (
+          <div className="w-1/4 bg-gray-800 bg-opacity-80 p-4 rounded-lg flex flex-col h-full">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold mb-3 flex items-center">
+                <AiOutlineRobot className="text-lg mr-2" />
+                Digital Assistant
+              </h2>
+              <div className="bg-[#1a1a4a] p-4 rounded-lg">
+                {isAnalyzing ? (
+                  <div className="text-sm text-gray-400">Analyzing message...</div>
+                ) : (
+                  <div className="space-y-3">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="w-full bg-[#2a2a5a] p-3 rounded text-left hover:bg-[#3a3a6a] transition-colors duration-200"
+                      >
+                        <p className="text-sm">{suggestion}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-3">Knowledge Base</h3>
+              <div className="space-y-2">
+                {knowledgeBase.map((article, index) => (
+                  <div key={index} className="bg-[#1a1a4a] p-3 rounded-lg">
+                    <h3 className="font-medium">{article.title}</h3>
+                    <p className="text-sm text-gray-400">{article.content}</p>
+                    <div className="mt-2 space-y-1">
+                      {article.solutions.map((solution, sIndex) => (
+                        <button
+                          key={sIndex}
+                          onClick={() => handleSuggestionClick(solution)}
+                          className="text-xs text-indigo-400 hover:text-indigo-300 block"
+                        >
+                          • {solution}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
+
+AgentChat.propTypes = {
+  messages: PropTypes.arrayOf(
+    PropTypes.shape({
+      role: PropTypes.string.isRequired,
+      text: PropTypes.string.isRequired,
+      timestamp: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+      type: PropTypes.string,
+      isTranslated: PropTypes.bool,
+      originalText: PropTypes.string,
+      senderRole: PropTypes.string,
+      targetRole: PropTypes.string
+    })
+  ).isRequired,
+  username: PropTypes.string.isRequired,
+  sendMessage: PropTypes.func.isRequired,
+  message: PropTypes.string.isRequired,
+  setMessage: PropTypes.func.isRequired,
+  formatTimestamp: PropTypes.func.isRequired,
+  messagesEndRef: PropTypes.object.isRequired,
+  isPrivate: PropTypes.bool.isRequired,
+  setIsPrivate: PropTypes.func.isRequired,
+  language: PropTypes.string.isRequired,
+  role: PropTypes.string.isRequired
+};
 
 export default AgentChat;
